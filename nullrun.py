@@ -60,14 +60,17 @@ def isprime(n):
 
 def factor_g(include_builtin_list = True):
     if include_builtin_list:
-        for x in plist: yield x
-    k = plist[-1] + 7
-    if k % 6 == 2:
-        yield k-5
-        k -= 2
+        for x in plist:
+            yield x
+    k = plist[-1]
+    if k % 6 == 1:
+        k += 5
+    elif k % 6 == 5:
+        yield k + 2
+        k += 7
     while True:
-        yield k-1
-        yield k+1
+        yield k - 1
+        yield k + 1
         k += 6
 
 def factor(n):
