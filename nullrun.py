@@ -3,6 +3,9 @@
 # NULLRUN -- NULL Interpreter in Python (2005-01-18)
 # Copyright (c) 2005, Kang Seonghoon <tokigun@gmail.com>.
 #
+# fixes by Ustin.fitc
+# cs134 (\x40) ukr (\x2e) net
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -18,7 +21,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-from sys import stdin, stdout, argv, exit
+from __future__ import division, print_function
+from sys import stdin, stdout, argv, exit, version_info
 try:
     from primes import list as plist
 except ImportError:
@@ -32,31 +36,50 @@ except ImportError:
         467, 479, 487, 491, 499, 503, 509, 521, 523, 541]
 
 def sprp(n, a):
-    if n < 2 or n & 1 == 0: return False
+    if n < 2 or n & 1 == 0:
+        return False
     d = n - 1
     while d & 1 == 0:
         d >>= 1
-        if pow(a, d, n) + 1 == n: return True
+        if pow(a, d, n) + 1 == n:
+            return True
     return pow(a, d, n) == 1
 
 def isprime(n):
-    if n < 2: return False
-    elif n < 4: return True
-    elif not sprp(n, 2): return False
-    elif n < 2047: return True
-    elif not sprp(n, 3): return False
-    elif n < 1373653: return True
-    elif not sprp(n, 5): return False
-    elif n < 25326001: return True
-    elif n == 3215031751 or not sprp(n, 7): return False
-    elif n < 118670087467: return True
-    elif not sprp(n, 11): return False
-    elif n < 2152302898747: return True
-    elif not sprp(n, 13): return False
-    elif n < 3474749660383: return True
-    elif not sprp(n, 17): return False
-    elif n < 341550071728321: return True
-    else: raise ValueError
+    if n < 2:
+        return False
+    elif n < 4:
+        return True
+    elif not sprp(n, 2):
+        return False
+    elif n < 2047:
+        return True
+    elif not sprp(n, 3):
+        return False
+    elif n < 1373653:
+        return True
+    elif not sprp(n, 5):
+        return False
+    elif n < 25326001:
+        return True
+    elif n == 3215031751 or not sprp(n, 7):
+        return False
+    elif n < 118670087467:
+        return True
+    elif not sprp(n, 11):
+        return False
+    elif n < 2152302898747:
+        return True
+    elif not sprp(n, 13):
+        return False
+    elif n < 3474749660383:
+        return True
+    elif not sprp(n, 17):
+        return False
+    elif n < 341550071728321:
+        return True
+    else:
+        raise ValueError
 
 def factor_g(include_builtin_list = True):
     if include_builtin_list:
@@ -74,14 +97,18 @@ def factor_g(include_builtin_list = True):
         k += 6
 
 def factor(n):
-    if n < 2: return n
+    if n < 2:
+        return n
     for i in factor_g():
-        if n % i == 0: return i
+        if n % i == 0:
+            return i
 
 def nprime(n):
     if n <= plist[-1]:
-        try: return plist.index(n) + 1
-        except: return -1
+        try:
+            return plist.index(n) + 1
+        except:
+            return -1
     else:
         k = len(plist) + 1
         for i in factor_g(False):
@@ -99,10 +126,17 @@ def nprime(n):
             return -1
 
 def interpret(prog):
-    q = [[], [], []]; qp = 0
-    x = long(prog); y = 1
+    q = [[], [], []]
+    qp = 0
+    if version_info[0] < 3:
+        x = long(prog)
+    else:
+        x = int(prog)
+    y = 1
     while x > 1:
-        n = factor(x); x /= n; y *= n
+        n = factor(x)
+        x //= n
+        y *= n
         n = nprime(n) % 14
         if n == 0:
             break
@@ -114,56 +148,71 @@ def interpret(prog):
             stdout.write(len(q[qp]) and chr(q[qp][-1]) or '\0')
         elif n == 4:
             tmp = ord(stdin.read(1))
-            if len(q[qp]): q[qp][-1] = tmp
-            else: q[qp].append(tmp)
+            if len(q[qp]):
+                q[qp][-1] = tmp
+            else:
+                q[qp].append(tmp)
         elif n == 5:
             if len(q[qp]):
                 y -= q[qp][-1]
-                if y < 0: y = 0
+                if y < 0:
+                    y = 0
         elif n == 6:
-            if len(q[qp]): y += q[qp][-1]
+            if len(q[qp]):
+                y += q[qp][-1]
         elif n == 7:
-            if len(q[qp]): q[qp][-1] = (q[qp][-1] + y) & 255
-            else: q[qp].append(y & 255)
+            if len(q[qp]):
+                q[qp][-1] = (q[qp][-1] + y) & 255
+            else:
+                q[qp].append(y & 255)
         elif n == 8:
-            if len(q[qp]): q[(qp+1)%3].insert(0, q[qp].pop())
-            else: q[(qp+1)%3].append(0)
+            if len(q[qp]):
+                q[(qp+1)%3].insert(0, q[qp].pop())
+            else:
+                q[(qp+1)%3].append(0)
         elif n == 9:
-            if len(q[qp]): q[(qp-1)%3].insert(0, q[qp].pop())
-            else: q[(qp-1)%3].append(0)
+            if len(q[qp]):
+                q[(qp-1)%3].insert(0, q[qp].pop())
+            else:
+                q[(qp-1)%3].append(0)
         elif n == 10:
-            try: q[qp].pop()
-            except: pass
+            try:
+                q[qp].pop()
+            except:
+                pass
         elif n == 11:
             q[qp].insert(0, y & 255)
         elif n == 12:
             if len(q[qp]) == 0 or q[qp][-1] == 0:
-                n = factor(x); x /= n; y *= n
+                n = factor(x)
+                x //= n
+                y *= n
         elif n == 13:
-            x, y = y, x
+            (x, y) = (y, x)
 
 def main(argv):
     if len(argv) != 2:
-        print "NULLRUN, interpreter of NULL programming language"
-        print "Kang Seonghoon (Tokigun) @ TokigunStudio 2005"
-        print
-        print "Usage: python %s <filename>" % argv[0]
-        print "Source file can be Python expression. (e.g. 2*3*5**8)"
-        print "You can use Python-style comment in each line of code."
-        print
-        print "Size of the prime database (primes.py) is %d." % len(plist)
+        print("NULLRUN, interpreter of NULL programming language")
+        print("Kang Seonghoon (Tokigun) @ TokigunStudio 2005")
+        print()
+        print("Usage: python %s <filename>" % argv[0])
+        print("Source file can be Python expression. (e.g. 2*3*5**8)")
+        print("You can use Python-style comment in each line of code.")
+        print()
+        print("Size of the prime database (primes.py) is %d." % len(plist))
         return 0
     
     try:
-        code = file(argv[1]).read()
+        code = open(argv[1], 'r').read()
     except:
-        print "Error: can't read file \"%s\"." % argv[1]
+        print("Error: can't read file \"%s\"." % argv[1])
         return 1
     
     rcode = ''
     for line in code.splitlines():
         pos = line.find('#')
-        if pos >= 0: line = line[:pos]
+        if pos >= 0:
+            line = line[:pos]
         rcode += line + ' '
     code = eval(rcode, {}, {})
     
